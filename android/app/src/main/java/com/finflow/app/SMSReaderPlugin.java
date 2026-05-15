@@ -39,7 +39,7 @@ public class SMSReaderPlugin extends Plugin {
     }
 
     @PermissionCallback
-    private void smsCallback(PluginCall call) {
+    public void smsCallback(PluginCall call) {
         if (getPermissionState("sms") == PermissionState.GRANTED) {
             loadSMS(call);
         } else {
