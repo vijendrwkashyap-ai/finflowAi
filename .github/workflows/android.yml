@@ -27,6 +27,11 @@ jobs:
           if [ -d "dist/client" ]; then
             mv dist/client/* dist/
           fi
+          # Ensure index.html exists for Capacitor and find the main JS bundle
+          if [ ! -f "dist/index.html" ]; then
+            MAIN_JS=$(ls dist/assets/index-*.js | head -n 1 | xargs basename)
+            echo "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\" /><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>FinFlow</title></head><body><div id=\"root\"></div><script type=\"module\" src=\"/assets/$MAIN_JS\"></script></body></html>" > dist/index.html
+          fi
 
       - name: Sync Capacitor
         run: npx cap sync android
