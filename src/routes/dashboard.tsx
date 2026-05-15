@@ -9,6 +9,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { PageShell } from "@/components/PageShell";
 import { useAuth } from "@/hooks/use-auth";
 import { useSMSTracker } from "@/hooks/use-sms-tracker";
+import { parseIndianBankSMS } from "@/lib/sms-parser";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Capacitor } from "@capacitor/core";
@@ -123,19 +124,17 @@ function Dashboard() {
         return;
       }
       
-      // Simple logic to find amounts in SMS
-      // In a real app, this would be much more complex regex
+      // Advanced logic to parse bank SMS
       const newExpenses = msgs.map(m => {
-        const amtMatch = m.body.match(/(?:Rs\.?|INR|debited)\s?([\d,.]+)/i);
-        const amount = amtMatch ? parseFloat(amtMatch[1].replace(/,/g, '')) : 0;
-        if (amount > 0) {
+        const parsed = parseIndianBankSMS(m.body, m.address, m.date);
+        if (parsed && parsed.amount > 0) {
           return {
             user_id: user?.id,
-            amount,
-            category: "Other",
-            merchant: m.address,
-            note: m.body.substring(0, 50) + "...",
-            spent_at: new Date(m.date).toISOString()
+            amount: parsed.amount,
+            category: parsed.category,
+            merchant: parsed.merchant,
+            note: parsed.note,
+            spent_at: parsed.date.toISOString()
           };
         }
         return null;
